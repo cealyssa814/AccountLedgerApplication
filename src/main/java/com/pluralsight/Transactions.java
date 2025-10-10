@@ -28,3 +28,28 @@ public class Transactions {
     public void setVendor(String vendor)          { this.vendor = vendor; }
     public void setAmount(double amount)          { this.amount = amount; }
 
+    public String toCsv() {
+        return date + "|" + time + "|" + description + "|" + vendor + "|" + amount;
+    }
+
+    public static Transactions fromCsv(String line) {
+        String[] parts = line.split("\\|");
+        if (parts.length != 5) return null;
+
+        String date = parts[0].trim();
+        String time = parts[1].trim();
+        String description = parts[2].trim();
+        String vendor = parts[3].trim();
+        double amount = Double.parseDouble(parts[4].trim());
+
+        return new Transactions(date, time, description, vendor, amount);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s | %-24s | %-12s | %8.2f",
+                date, time, description, vendor, amount);
+    }
+}
+
+
