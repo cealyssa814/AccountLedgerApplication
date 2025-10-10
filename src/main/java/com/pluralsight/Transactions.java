@@ -1,20 +1,10 @@
 package com.pluralsight;
 
 public class Transactions {
-        private String date, time, description, vendor;
-        private double amount;
+    // fields match the CSV columns
+    private String date;        // YYYY-MM-DD
+    private String time;        // HH:MM:SS
+    private String description; // what happened
+    private String vendor;      // who it was with
+    private double amount;      // + for deposits, - for payments
 
-        public Transactions(String date, String time, String description, String vendor, double amount) {
-            this.date = date; this.time = time; this.description = description; this.vendor = vendor; this.amount = amount;
-        }
-
-        public String getDate() { return date; }
-        public String getTime() { return time; }
-        public String getDescription() { return description; }
-        public String getVendor() { return vendor; }
-        public double getAmount() { return amount; }
-
-        public String toCsv() {
-            return date + "|" + time + "|" + description + "|" + vendor + "|" + amount;
-        }
-}
