@@ -1,5 +1,7 @@
 package com.pluralsight;
 
+import java.io.File;
+
 public class Transactions {
 
     private String date;
@@ -50,6 +52,5 @@ public class Transactions {
         return String.format("%s %s | %-24s | %-12s | %8.2f",
                 date, time, description, vendor, amount);
     }
+
 }
-
-
