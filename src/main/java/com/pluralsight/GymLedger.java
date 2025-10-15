@@ -11,7 +11,7 @@ public class GymLedger {
 
     public static void main(String[] args) {
         loadTransactions();
-        System.out.println("~~~ Transactions (with demo data added) ~~~");
+        System.out.println("~~~ Transactions ~~~");
         for (int i = 0; i < transactions.size(); i++) {
             System.out.println(transactions.get(i));
         }
@@ -32,7 +32,7 @@ public class GymLedger {
 
         java.util.Scanner sc = new java.util.Scanner(System.in);
         while (true) {
-            System.out.println("\n=== HOME ===");
+            System.out.println("\n~~~ HOME ~~~");
             System.out.println("D) Add Deposit");
             System.out.println("P) Make Payment");
             System.out.println("L) Ledger");
@@ -137,4 +137,94 @@ public class GymLedger {
 
         }
     }
+
+    private static ArrayList<Transactions> filterDeposits(ArrayList<Transactions> list) {
+        ArrayList<Transactions> out = new ArrayList<Transactions>();
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getAmount() > 0) out.add(list.get(i));
+        }
+        return out;
+    }
+
+    private static ArrayList<Transactions> filterPayments(ArrayList<Transactions> list) {
+        ArrayList<Transactions> out = new ArrayList<Transactions>();
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getAmount() < 0) out.add(list.get(i));
+        }
+        return out;
+    }
+
+    private static String stamp(Transactions t) {
+        return t.getDate() + " " + t.getTime(); // ISO sorts correctly as text
+    }
+
+    private static void sortNewestFirst(ArrayList<Transactions> list) {
+        for (int i = 1; i < list.size(); i++) {
+            Transactions key = list.get(i);
+            String keyStamp = stamp(key);
+            int j = i - 1;
+            while (j >= 0 && stamp(list.get(j)).compareTo(keyStamp) < 0) {
+                list.set(j + 1, list.get(j));
+                j--;
+            }
+            list.set(j + 1, key);
+        }
+    }
+
+    private static void printList(ArrayList<Transactions> list) {
+        if (list.isEmpty()) { System.out.println("(no entries)"); return; }
+
+        ArrayList<Transactions>copy = new ArrayList<Transactions>();
+        for (int i = 0; i < list.size(); i++) copy.add(list.get(i));
+
+        sortNewestFirst(copy);
+
+        for (int i = 0; i < copy.size(); i++) {
+            System.out.println(copy.get(i));
+        }
+    }
+
+
+    private static void showReports(java.util.Scanner sc) {
+        System.out.println("\n~~~ REPORTS ~~~");
+        System.out.println("1) Month To Date");
+        System.out.println("5) Search by Vendor");
+        System.out.println("0) Back");
+        System.out.print("Choose: ");
+        String pick = sc.nextLine().trim();
+
+        if (pick.equals("1")) {
+            monthToDate();
+        } else if (pick.equals("5")) {
+            System.out.print("Vendor name: ");
+            String vendor = sc.nextLine().trim().toLowerCase();
+
+            ArrayList<Transactions> out = new ArrayList<Transactions>();
+            for (int i = 0; i < transactions.size(); i++) {
+                if (transactions.get(i).getVendor().toLowerCase().contains(vendor)) {
+                    out.add(transactions.get(i));
+                }
+            }
+            printList(out);
+        }
+    }
+
+    private static void monthToDate() {
+        java.time.LocalDate now = java.time.LocalDate.now();
+        ArrayList<Transactions> out = new ArrayList<Transactions>();
+        for (int i = 0; i < transactions.size(); i++) {
+            java.time.LocalDate d = java.time.LocalDate.parse(transactions.get(i).getDate());
+            if (d.getYear() == now.getYear() && d.getMonthValue() == now.getMonthValue()) {
+                out.add(transactions.get(i));
+            }
+        }
+        System.out.println("\n-- Month To Date --");
+        printList(out);
+    }
+
+    private static void printHeader() {
+        System.out.println("DATE       TIME     | DESCRIPTION              | VENDOR       |   AMOUNT");
+        System.out.println("-------------- ---- | ------------------------ | ------------ | --------");
+    }
+
 }
