@@ -1,44 +1,53 @@
-package com.pluralsight;// GymLedger.java.
+package com.pluralsight;
+//ALL EXTENSIVE NOTES = iPad LTCA WRITTEN NOTES
 // Loads transactions from "transactions.csv" using BufferedReader (3a pp.12–15).
 // Home >> D/P/L/X menu (workshop 2w p.4).
 // Ledger >> All/Deposits/Payments/Reports (simple filtering and insertion sort).
 
-import java.io.BufferedReader;     // reading files (3a pp.12–15)
+import java.io.BufferedReader;      // reading files (WB 3a File I/O Reading)
 import java.io.FileReader;
+import java.io.FileWriter;          // writing files (WB 3a p.21)
+import java.io.BufferedWriter;      // buffered writing (WB 3a p.22)
 import java.io.IOException;
-import java.util.ArrayList;        // collections (3a p.49 shows ArrayList in use)
-import java.util.Scanner;          // console input
-
+import java.util.ArrayList;         // ArrayList basics (WB 3a Collections/ArrayList)
+import java.util.Scanner;           // console input
 
 public class GymLedger {
+
+    // The CSV we read & write. One transaction per line: date|time|description|vendor|amount
     private static final String FILE_NAME = "transactions.csv";
-    private static final ArrayList<Transactions> transactions = new ArrayList<>(); // growing list (3a p.49)
+
+    // Keep all transactions in memory here
+    private static final ArrayList<Transactions> transactions = new ArrayList<>();
 
     public static void main(String[] args) {
-        loadTransactions(); // readLine loop pattern (3a pp.12–15)
+        // Load CSV once at startup
+        loadTransactions(); // wb 3a File I/O Reading style
 
-        // 2) Home menu loop (simple while-true menu, 2a pp.55–59 for loops)
+        // Home menu loop (Strings: trim(), toUpperCase(); Loops: while/if)
         Scanner sc = new Scanner(System.in);
         while (true) {
-            System.out.println("\n=== HOME (Gym Ledger) ===");
+            System.out.println("\n~~~ HOME (Gym Ledger) ~~~");
             System.out.println("D) Add Deposit");
             System.out.println("P) Make Payment");
             System.out.println("L) Ledger");
             System.out.println("X) Exit");
             System.out.print("Choose: ");
-            String pick = sc.nextLine().trim().toUpperCase(); //(string methods 2a pp.9–10)
+            String pick = sc.nextLine().trim().toUpperCase(); // wb 2a string methods
 
             if (pick.equals("D")) {
-                Transactions t = promptTransaction(sc, true);     // deposit = pos
+                Transactions t = promptTransaction(sc, true);    // deposit = pos
                 if (t != null) {
-                    transactions.add(t);                          // add (3a p.49)
-                    System.out.println("Deposit added (memory only).");
+                    transactions.add(t);                        // ArrayList add (wb 3a)
+                    writeAll();                                 // Save entire file (wb 3a pp.21–23)
+                    System.out.println("Deposit saved to CSV!");
                 }
             } else if (pick.equals("P")) {
-                Transactions t = promptTransaction(sc, false);    // payment = neg
+                Transactions t = promptTransaction(sc, false);   // payment = neg
                 if (t != null) {
                     transactions.add(t);
-                    System.out.println("Payment added (memory only).");
+                    writeAll();
+                    System.out.println("Payment saved to CSV!");
                 }
             } else if (pick.equals("L")) {
                 showLedger(sc);
@@ -52,28 +61,52 @@ public class GymLedger {
         sc.close();
     }
 
-   //File Loading
+
+    // Loading from file: read the CSV into the ArrayList
     private static void loadTransactions() {
         transactions.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
-            // read until end of file: while((line = br.readLine()) != null) … (3a pp.12–13)
+            // read a line until null loop (wb 3a File I/O Reading)
             while ((line = br.readLine()) != null) {
+                // Split the line into parts inside Transactions.fromCsv (wb 2a: split("\\|"))
                 Transactions t = Transactions.fromCsv(line.trim());
-                // split on "|" (2a p.12)
-                // parse numbers (2a p.17)
                 if (t != null) transactions.add(t);
             }
             System.out.println("(Loaded " + transactions.size() + " entries from " + FILE_NAME + ")");
         } catch (IOException e) {
-            // If file not found or any error, just start with empty list for now (beginner choice)
+            // If file is missing or unreadable, just start with empty list
             System.out.println("(Could not read " + FILE_NAME + "; starting with empty ledger)");
         }
     }
 
-    // Prompt for a new transaction
+
+    // Saving to file: write the ArrayList back to the CSV
+    // FileWriter + BufferedWriter (wb 3a pp.21–23).
+    private static void writeAll() {
+        BufferedWriter bw = null;
+        try {
+            // Overwrite the file each time
+            FileWriter fw = new FileWriter(FILE_NAME);
+            bw = new BufferedWriter(fw);
+
+            for (int i = 0; i < transactions.size(); i++) {
+                String row = transactions.get(i).toCsv();  // "date|time|description|vendor|amount"
+                bw.write(row);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("ERROR writing file: " + e.getMessage());
+        } finally {
+            try { if (bw != null) bw.close(); } catch (IOException ignore) {}
+        }
+    }
+
+
+    // For the prompt in wb: build one Transaction from user input
+    // Strings >> numbers with Double.parseDouble (wb 2a)
     private static Transactions promptTransaction(Scanner sc, boolean isDeposit) {
-        System.out.print("Date (YYYY-MM-DD): ");      // format (2a p.18 talks about LocalDate.parse and ISO)
+        System.out.print("Date (YYYY-MM-DD): ");   // format helps later with LocalDate.parse (wb 2a)
         String date = sc.nextLine().trim();
 
         System.out.print("Time (HH:mm:ss): ");
@@ -85,33 +118,38 @@ public class GymLedger {
         System.out.print("Vendor: ");
         String vend = sc.nextLine().trim();
 
-        System.out.print("Amount (positive number): ");
-        String amtStr = sc.nextLine().trim();
-        double amt = 0.0;
-        try {
-            amt = Double.parseDouble(amtStr);         // string >> number (2a p.17)
-        } catch (NumberFormatException ex) {
-            System.out.println("Not a valid number. Cancelled.");
-            return null;
+        double amt;
+        while (true) {
+            System.out.print("Amount (just the number): ");
+            String amtStr = sc.nextLine().trim();
+            try {
+                amt = Double.parseDouble(amtStr); // WB 2a parseDouble
+                break;
+            } catch (NumberFormatException ex) {
+                System.out.println("Please enter a number like 150.00 or 32.50");
+            }
         }
 
-        if (!isDeposit) {
-            amt = -Math.abs(amt); // make payments neg
+        //deposits positive, payments negative
+        if (isDeposit) {
+            amt = Math.abs(amt);
         } else {
-            amt = Math.abs(amt);  // make deposits pos
+            amt = -Math.abs(amt);
         }
 
-        return new Transactions( time, desc, vend, vend, amt);
+        // Returns a new Transaction
+        return new Transactions(date, time, desc, vend, amt);
     }
 
-    //Ledger Screen
+    // Ledger menu: All / Deposits / Payments / Reports / Home
+    // Sort newest first
     private static void showLedger(Scanner sc) {
-        // Show newest first (2a p.72 shows sorting basics)
+        // work on a copy so the “home list” stays untouched
         ArrayList<Transactions> copy = new ArrayList<>(transactions);
-        sortNewestFirst(copy);
+        sortNewestFirst(copy); // newest (later date/time) first
 
         while (true) {
-            System.out.println("\n=== LEDGER ===");
+            System.out.println("\n~~~ LEDGER ~~~");
             System.out.println("A) All");
             System.out.println("D) Deposits only");
             System.out.println("P) Payments only");
@@ -121,13 +159,13 @@ public class GymLedger {
             String pick = sc.nextLine().trim().toUpperCase();
 
             if (pick.equals("A")) {
-                printList(copy);                         // all
+                printList(copy);
             } else if (pick.equals("D")) {
-                printFiltered(copy, true);               // deposits
+                printFiltered(copy, true);
             } else if (pick.equals("P")) {
-                printFiltered(copy, false);              // payments
+                printFiltered(copy, false);
             } else if (pick.equals("R")) {
-                showReports(sc, copy);                   // step 8: month-to-date, prev month, YTD, prev year, search by vendor
+                showReports(sc, copy);   // auto-computed
             } else if (pick.equals("H")) {
                 break;
             } else {
@@ -136,12 +174,11 @@ public class GymLedger {
         }
     }
 
-    //newest (bigger date/time) should come first
+    //Sort by with date/time as strings (YYYY-MM-DD, HH:mm:ss).
     private static void sortNewestFirst(ArrayList<Transactions> list) {
         for (int i = 1; i < list.size(); i++) {
             Transactions key = list.get(i);
             int j = i - 1;
-            // Compare by date string, then time string
             while (j >= 0 && isAfter(key, list.get(j))) {
                 list.set(j + 1, list.get(j));
                 j--;
@@ -150,12 +187,11 @@ public class GymLedger {
         }
     }
 
-    // Return true if a is NEWER than b
+    // Return true if a is NEWER than b (compare date first, then time)
     private static boolean isAfter(Transactions a, Transactions b) {
         int cmpDate = a.getDate().compareTo(b.getDate());
         if (cmpDate > 0) return true;
         if (cmpDate < 0) return false;
-        // same date => compare times
         return a.getTime().compareTo(b.getTime()) > 0;
     }
 
@@ -164,7 +200,7 @@ public class GymLedger {
             System.out.println("(no entries)");
             return;
         }
-        for (int i = 0; i < list.size(); i++) {          // simple indexed loop (2a pp.55–59)
+        for (int i = 0; i < list.size(); i++) {
             System.out.println(list.get(i));
         }
     }
@@ -179,10 +215,13 @@ public class GymLedger {
         if (!any) System.out.println("(none)");
     }
 
-    //Reports
+
+    // REPORTS MENU:
+    // Uses LocalDate
+
     private static void showReports(Scanner sc, ArrayList<Transactions> list) {
         while (true) {
-            System.out.println("\n=== REPORTS ===");
+            System.out.println("\n~~~ REPORTS ~~~");
             System.out.println("1) Month To Date");
             System.out.println("2) Previous Month");
             System.out.println("3) Year To Date");
@@ -194,65 +233,105 @@ public class GymLedger {
 
             if (pick.equals("0")) break;
 
-            if (pick.equals("5")) {
+            if (pick.equals("1")) {
+                monthToDate(list);
+            } else if (pick.equals("2")) {
+                previousMonth(list);
+            } else if (pick.equals("3")) {
+                yearToDate(list);
+            } else if (pick.equals("4")) {
+                previousYear(list);
+            } else if (pick.equals("5")) {
                 System.out.print("Vendor to search: ");
-                String term = sc.nextLine().trim().toLowerCase();
+                String term = sc.nextLine().trim().toLowerCase();  // wb 2a toLowerCase + contains
                 boolean any = false;
                 for (int i = 0; i < list.size(); i++) {
                     Transactions t = list.get(i);
-                    if (t.getVendor().toLowerCase().contains(term)) { // string contains (2a pp.9–12 examples)
+                    if (t.getVendor().toLowerCase().contains(term)) {
                         System.out.println(t);
                         any = true;
                     }
                 }
                 if (!any) System.out.println("(no matches)");
-                continue;
-            }
-
-            if (pick.equals("1")) {
-                System.out.print("Type current year-month (YYYY-MM), e.g. 2025-10: ");
-                String ym = sc.nextLine().trim();
-                printByYearMonth(list, ym);
-            } else if (pick.equals("2")) {
-                System.out.print("Type previous year-month (YYYY-MM): ");
-                String ym = sc.nextLine().trim();
-                printByYearMonth(list, ym);
-            } else if (pick.equals("3")) {
-                System.out.print("Type current year (YYYY), e.g. 2025: ");
-                String y = sc.nextLine().trim();
-                printByYear(list, y);
-            } else if (pick.equals("4")) {
-                System.out.print("Type previous year (YYYY): ");
-                String y = sc.nextLine().trim();
-                printByYear(list, y);
             } else {
                 System.out.println("Pick 0–5.");
             }
         }
     }
 
-    private static void printByYearMonth(ArrayList<Transactions> list, String yearMonth) {
-        boolean any = false;
-        for (int i = 0; i < list.size(); i++) {
-            Transactions t = list.get(i);
-            // date starts with YYYY-MM so startsWith works
-            if (t.getDate().startsWith(yearMonth)) {     // string startsWith example style (2a p.11)
-                System.out.println(t);
-                any = true;
-            }
+    // to help with the date
+    // Parses the ISO date.
+    // If bad date, return null and skip.
+    private static java.time.LocalDate parseDateOrNull(String yyyyMmDd) {
+        try {
+            return java.time.LocalDate.parse(yyyyMmDd);  // wb 2a LocalDate.parse with format
+        } catch (Exception e) {
+            return null;
         }
-        if (!any) System.out.println("(none)");
     }
 
-    private static void printByYear(ArrayList<Transactions> list, String year) {
-        boolean any = false;
+    private static void monthToDate(ArrayList<Transactions> list) {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate firstDay = today.withDayOfMonth(1);
+
+        ArrayList<Transactions> out = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
-            Transactions t = list.get(i);
-            if (t.getDate().startsWith(year)) {
-                System.out.println(t);
-                any = true;
+            java.time.LocalDate d = parseDateOrNull(list.get(i).getDate());
+            if (d == null) continue;
+            if (!d.isBefore(firstDay) && !d.isAfter(today)) {
+                out.add(list.get(i));
             }
         }
-        if (!any) System.out.println("(none)");
+        System.out.println("\n-- Month To Date (" + firstDay + " .. " + today + ") --");
+        printList(out);
+    }
+
+    private static void previousMonth(ArrayList<Transactions> list) {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate firstPrev = today.minusMonths(1).withDayOfMonth(1);
+        java.time.LocalDate lastPrev = firstPrev.withDayOfMonth(firstPrev.lengthOfMonth());
+
+        ArrayList<Transactions> out = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            java.time.LocalDate d = parseDateOrNull(list.get(i).getDate());
+            if (d == null) continue;
+            if (!d.isBefore(firstPrev) && !d.isAfter(lastPrev)) {
+                out.add(list.get(i));
+            }
+        }
+        System.out.println("\n-- Previous Month (" + firstPrev + " .. " + lastPrev + ") --");
+        printList(out);
+    }
+
+    private static void yearToDate(ArrayList<Transactions> list) {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate jan1 = java.time.LocalDate.of(today.getYear(), 1, 1);
+
+        ArrayList<Transactions> out = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            java.time.LocalDate d = parseDateOrNull(list.get(i).getDate());
+            if (d == null) continue;
+            if (!d.isBefore(jan1) && !d.isAfter(today)) {
+                out.add(list.get(i));
+            }
+        }
+        System.out.println("\n-- Year To Date (" + jan1 + " .. " + today + ") --");
+        printList(out);
+    }
+
+    private static void previousYear(ArrayList<Transactions> list) {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        int prevYear = today.getYear() - 1;
+
+        ArrayList<Transactions> out = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            java.time.LocalDate d = parseDateOrNull(list.get(i).getDate());
+            if (d == null) continue;
+            if (d.getYear() == prevYear) {
+                out.add(list.get(i));
+            }
+        }
+        System.out.println("\n-- Previous Year (" + prevYear + ") --");
+        printList(out);
     }
 }
