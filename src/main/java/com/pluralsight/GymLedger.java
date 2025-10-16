@@ -2,7 +2,7 @@ package com.pluralsight;
 //ALL EXTENSIVE NOTES = iPad LTCA WRITTEN NOTES
 // Loads transactions from "transactions.csv" using BufferedReader (3a pp.12–15).
 // Home >> D/P/L/X menu (workshop 2w p.4).
-// Ledger >> All/Deposits/Payments/Reports (simple filtering and insertion sort).
+// Ledger >> All/Deposits/Payments/Reports.
 
 import java.io.BufferedReader;      // reading files (WB 3a File I/O Reading)
 import java.io.FileReader;
