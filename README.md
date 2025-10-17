@@ -200,6 +200,11 @@ Results appear in newest-first order because the ledger copy is already sorted t
 
 	Deposits are positive, payments are negative. The app enforces this when you enter data.
 
+# My most interesting part of code
+
+<img width="1070" height="747" alt="Screenshot 2025-10-17 at 8 07 54 AM" src="https://github.com/user-attachments/assets/fb3240f3-43ee-4492-af32-9cbd99c3a6a9" />
+
+
 # A glimpse into the beginning stages of the Ledger
 	This is in reference to my process and the strategy I used to formulate this code in small steps 
 	to pace myself (which ended up coming in lots of handy).
