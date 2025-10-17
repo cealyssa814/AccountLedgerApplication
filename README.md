@@ -1,6 +1,7 @@
-# Gymnastics Gym Ledger 
+# 🎀Gymnastics Gym Ledger🎀 
 
-*A super simple app that lets a gymnastics gym track money going in (deposits) and out (payments).
+***Welcome to the Accounting Ledger used by the AH Gymnastics Academy. This is a super simple app that lets a gymnastics gym track money going in (deposits) and out (payments) with other viewing features such as
+reports for quarterly expense review.***
 
 It reads and writes a file called transactions.csv.
 
@@ -37,7 +38,7 @@ It reads and writes a file called transactions.csv.
 
 3. If it doesn’t exist, you can create a blank file, or copy the sample below.
 
-4. Right-click GymLedger.java → Run 'GymLedger.main()'.
+4. Right-click GymLedger.java >> Run 'GymLedger.main()'.
 
 5. Use the menu: D, P, L, X.
    <img width="326" height="142" alt="Screenshot 2025-10-16 at 3 45 26 PM" src="https://github.com/user-attachments/assets/64a99b6c-8bc6-4f09-ba05-cdc9a6a2016b" />
@@ -68,7 +69,7 @@ Each line in transactions.csv is one transaction:
 
 # Using the app 
 
-1. Run the app → you’ll see:
+1. Run the app >> you’ll see:
 
 		D) Add Deposit
 		P) Make Payment
@@ -79,7 +80,7 @@ Each line in transactions.csv is one transaction:
 	Press D and add a deposit (example: Tuition).
 		What it does: adds money into the account (saves a positive amount).
 
-		What you type: date → time → description → vendor → amount (just the number).
+		What you type: date >> time >> description >> vendor >> amount (just the number).
 
 		What gets saved: a new line in transactions.csv like:
 
@@ -89,9 +90,9 @@ Each line in transactions.csv is one transaction:
 
 		*Common mistakes & fixes:
 
-			-Typo in amount (letters) → you’ll be re-asked until it parses.
+			-Typo in amount (letters) >> you’ll be re-asked until it parses.
 
-			-Wrong date format → still saves, but date-based reports might skip it.
+			-Wrong date format >> still saves, but date-based reports might skip it.
 
 <img width="344" height="140" alt="Screenshot 2025-10-16 at 3 53 00 PM" src="https://github.com/user-attachments/assets/3c6ba821-a0f9-49f8-86cb-f9a24f38ea22" />
 
@@ -102,11 +103,11 @@ Each line in transactions.csv is one transaction:
 
 	What gets saved: a new line with a minus in front of the amount (the app adds it):
 
-	Behind the scenes: amount is forced negative with -Math.abs(amt).
+	Under the hood: amount is forced negative with -Math.abs(amt).
 
 	*Common mistakes & fixes:
 
-		-Entering a negative number yourself → app keeps it negative anyway (safe).
+		-Entering a negative number yourself >> app keeps it negative anyway.
 
 <img width="434" height="140" alt="Screenshot 2025-10-16 at 4 05 52 PM" src="https://github.com/user-attachments/assets/af73c474-04bc-4a52-a291-06c0b33eca5e" />
 
@@ -159,17 +160,27 @@ Results appear in newest-first order because the ledger copy is already sorted t
 
 -Transactions.java defines one receipt (fields + constructor + getters/setters).
 
--toCsv() and fromCsv(...) translate between objects and file lines.
+<img width="1062" height="642" alt="Screenshot 2025-10-16 at 8 13 57 PM" src="https://github.com/user-attachments/assets/8d8e5f61-033a-42f2-97c4-2fd6104ca147" />
+
+
+-toCsv() and fromCsv(...) or our translators to translate between objects and file lines.
+
+<img width="1063" height="517" alt="Screenshot 2025-10-16 at 8 15 07 PM" src="https://github.com/user-attachments/assets/58138c8f-14f1-4177-b79b-79e51150ee4f" />
+
 
 -GymLedger.java:
 
-	-Loads all lines into an ArrayList<Transactions> at startup.
+	>Loads all lines into an ArrayList<Transactions> at startup.
 
-	-After adding an entry, it rewrites the whole file.
+<img width="1075" height="175" alt="Screenshot 2025-10-16 at 8 16 23 PM" src="https://github.com/user-attachments/assets/42f8162b-aee8-49d0-93ba-5e323aca833e" />
 
-	=Ledger is sorted newest first by comparing the date/time strings.
+	>After adding an entry, it rewrites the whole file.
 
-	-Reports use LocalDate to filter by month/year.
+	>Ledger is sorted newest first by comparing the date/time strings.
+
+<img width="1070" height="302" alt="Screenshot 2025-10-16 at 8 17 57 PM" src="https://github.com/user-attachments/assets/56de04a3-597f-4d3b-bf12-27296a8e217f" />
+
+	>Reports use LocalDate to filter by month/year.
 
 # Troubleshooting
 
@@ -188,3 +199,11 @@ Results appear in newest-first order because the ledger copy is already sorted t
 -Amounts look wrong
 
 	Deposits are positive, payments are negative. The app enforces this when you enter data.
+
+# A glimpse into the beginning stages of the Ledger
+	This is in reference to my process and the strategy I used to formulate this code in small steps 
+	to pace myself (which ended up coming in lots of handy).
+	
+![Untitled Notebook-2](https://github.com/user-attachments/assets/ea478c45-0d5d-4943-9e6e-17f7a5c7dc81)
+![Untitled Notebook-3](https://github.com/user-attachments/assets/cc83b7d3-5392-42dc-bf49-63cfec886638)
+
