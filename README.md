@@ -36,7 +36,7 @@ It reads and writes a file called transactions.csv.
 
 2. Make sure transactions.csv is at the project root (same level as src/).
 
-3. If it doesn’t exist, you can create a blank file, or copy the sample below.
+3. If it doesn’t exist, you can create a blank file, or copy the sample.
 
 4. Right-click GymLedger.java >> Run 'GymLedger.main()'.
 
