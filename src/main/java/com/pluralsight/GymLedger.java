@@ -26,6 +26,10 @@ public class GymLedger {
 
         // Home menu loop (Strings: trim(), toUpperCase(); Loops: while/if)
         Scanner sc = new Scanner(System.in);
+
+        //Have to assume we don’t know how many times the user will use the menu.
+        //It keeps going until the user says “Exit.”
+        //break gives an exit path.
         while (true) {
             System.out.println("\n~~~ HOME (Gym Ledger) ~~~");
             System.out.println("D) Add Deposit");
@@ -65,6 +69,8 @@ public class GymLedger {
     // Loading from file: read the CSV into the ArrayList
     private static void loadTransactions() {
         transactions.clear();
+        //File ends when readLine() returns null.
+        //We don’t know how many lines are in the file, so a while loop checks “keep going until no more lines.”
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
             // read a line until null loop (wb 3a File I/O Reading)
@@ -118,6 +124,8 @@ public class GymLedger {
         System.out.print("Vendor: ");
         String vend = sc.nextLine().trim();
 
+        //We don’t know how many tries the user will need.
+        //We only stop when we successfully parse a number (break).
         double amt;
         while (true) {
             System.out.print("Amount (just the number): ");
@@ -176,13 +184,26 @@ public class GymLedger {
 
     //Sort by with date/time as strings (YYYY-MM-DD, HH:mm:ss).
     private static void sortNewestFirst(ArrayList<Transactions> list) {
+        // Start at the 2nd item (index 1) because a single item (index 0) is already "sorted".
         for (int i = 1; i < list.size(); i++) {
+            // Grab the current card/receipt we want to insert in the correct spot.
+            // Ex. call it "key" because we're trying to find the right "lock" position for it.
             Transactions key = list.get(i);
+            // j points to the item just before i.
+            // Ex. We walk left (toward the front) to find where key belongs.
             int j = i - 1;
+            // Ex. While we haven't run off the left edge (j >= 0)
+            // Ex. AND the "key" is NEWER than the thing at position j...
+            // Ex. keep sliding items to the right to make room for key.
             while (j >= 0 && isAfter(key, list.get(j))) {
+                // Move the item at j one step to the right (j -> j+1),
+                // basically shifting the older item over to make space.
                 list.set(j + 1, list.get(j));
+                // Step left and compare again (keep shuffling until key is in the right spot).
                 j--;
             }
+            // Ex. The keyhole is found and the "key" is now in the opening at j+1.
+            // j+1? Because the loop moved j one step too far to the left.
             list.set(j + 1, key);
         }
     }
@@ -271,17 +292,25 @@ public class GymLedger {
     }
 
     private static void monthToDate(ArrayList<Transactions> list) {
+        // "today" = the current calendar day on this computer.
         java.time.LocalDate today = java.time.LocalDate.now();
+        // firstDay = the 1st day of the current month (e.g., Nov 1st if today is Nov 18th).
         java.time.LocalDate firstDay = today.withDayOfMonth(1);
 
         ArrayList<Transactions> out = new ArrayList<>();
+        // Walk through every transaction we were given.
         for (int i = 0; i < list.size(); i++) {
+            // Turn the transaction's date string (YYYY-MM-DD) into a LocalDate.
+            // If the date string is bad, we get null instead of crashing.
             java.time.LocalDate d = parseDateOrNull(list.get(i).getDate());
             if (d == null) continue;
+            // Keep it only if d is NOT before firstDay AND NOT after today
+            // (aka: d is between firstDay and today, inclusive).
             if (!d.isBefore(firstDay) && !d.isAfter(today)) {
                 out.add(list.get(i));
             }
         }
+        // Header so the user knows the date window used.
         System.out.println("\n-- Month To Date (" + firstDay + " .. " + today + ") --");
         printList(out);
     }
@@ -294,11 +323,14 @@ public class GymLedger {
         ArrayList<Transactions> out = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             java.time.LocalDate d = parseDateOrNull(list.get(i).getDate());
-            if (d == null) continue;
+            if (d == null) continue; // skip bad date rows
+            // Keep if date is NOT before firstPrev AND NOT after lastPrev
+            // (aka: inside the previous month, inclusive).
             if (!d.isBefore(firstPrev) && !d.isAfter(lastPrev)) {
                 out.add(list.get(i));
             }
         }
+        // Tell the user exactly which window we used.
         System.out.println("\n-- Previous Month (" + firstPrev + " .. " + lastPrev + ") --");
         printList(out);
     }
@@ -333,5 +365,15 @@ public class GymLedger {
         }
         System.out.println("\n-- Previous Year (" + prevYear + ") --");
         printList(out);
+
+        //Piece of code to be proud of:
+
+        //1. figured out the date window (start/end or exact year)
+        //2. loop through the list
+        //3. parsed each date
+        //4. kept only the ones inside the window
+        //5. printed the filtered list with a clear header.
+            //* using !d.isBefore(start) and !d.isAfter(end) makes the range inclusive (includes the endpoints).
+            //* parseDateOrNull protects the app from bad date strings—bad rows are skipped
     }
 }
